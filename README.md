@@ -1,4 +1,4 @@
 # SchulmanagerOffline
-This is a inofficial Mobile App to fix bugs and improve SchulmanagerOnline
-Uses the Webview to replicate the website in the app
-Private Projekt by GruenerAdler
+This is a inofficial Mobile App to fix bugs and improve SchulmanagerOnline.
+Uses the Webview to replicate the website in the app.
+Private Project by GruenerAdler
