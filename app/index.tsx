@@ -5,7 +5,7 @@ import { Alert, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 
-const CURRENT_VERSION = "0.1.0"; //TODO: updaten!! UND in app.json
+const CURRENT_VERSION = "0.1.1"; //TODO: updaten!! UND in app.json
 
 
 // Autoupdate
