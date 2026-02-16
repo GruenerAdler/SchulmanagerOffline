@@ -29,8 +29,8 @@ const getLatestApk = async () => {
 const checkForUpdate = async () => {
   try {
     const latest = await getLatestApk();
-
-    if (latest.version !== CURRENT_VERSION) {
+    const cleanLatest = latest.version.replace(/[^\d.]/g, "");
+    if (cleanLatest !== CURRENT_VERSION) {
       //Prompt
       Alert.alert(
         "Update verfügbar",
