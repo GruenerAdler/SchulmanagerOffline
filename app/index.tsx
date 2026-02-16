@@ -1,9 +1,83 @@
-import React, { useRef } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import * as FileSystem from 'expo-file-system';
+import * as IntentLauncher from 'expo-intent-launcher';
+import React, { useEffect, useRef } from 'react';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 
+const CURRENT_VERSION = "0.1.0"; //TODO: updaten!! UND in app.json
+
+
+// Autoupdate
+const getLatestApk = async () => {
+  const response = await fetch('https://api.github.com/repos/GruenerAdler/SchulmanagerOffline/releases/latest');
+  const data = await response.json();
+
+  console.log("GitHub API Response:", data);
+
+  const apk = data.assets.find(a => a.name.endsWith('.apk'));
+  if (!apk) {
+    throw new Error("Keine APK gefunden!");
+  }
+
+  return {
+    url: apk.browser_download_url,
+    version: data.tag_name
+  };
+};
+
+const checkForUpdate = async () => {
+  try {
+    const latest = await getLatestApk();
+
+    if (latest.version !== CURRENT_VERSION) {
+      //Prompt
+      Alert.alert(
+        "Update verfügbar",
+        `Neue Version ${latest.version} verfügbar. Willst du updaten?`,
+        [
+          {
+            text: "Nein",
+            style: "cancel"
+          },
+          {
+            text: "Ja",
+            onPress: () => DownloadAndInstall(latest.url)
+          }
+        ]
+      );
+    }
+  } catch (error) {
+    console.log("Update-Check Fehler:", error);
+  };
+};
+const DownloadAndInstall = async (apkUrl) => {
+  try {
+    const fileUri = FileSystem.documentDirectory + 'app-release.apk';
+
+    // Download
+    const download = await FileSystem.downloadAsync(apkUrl, fileUri);
+    console.log("APK gespeichert unter:", download.uri);
+
+    // Installationsdialog starten
+    await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
+      data: download.uri,
+      flags: 1,
+      type: 'application/vnd.android.package-archive'
+    });
+  } catch (error) {
+  console.log("Download/Install Fehler:", error);
+  }
+};
+
+
+
 const Home = () => {
+  useEffect(() => {
+    checkForUpdate();
+  }, []);
+
+  // Prepare URL
   const webviewRef = useRef(null);
   let tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -14,6 +88,9 @@ const Home = () => {
   return (
     <SafeAreaView style={styles.container}>
       <WebView
+        sharedCookiesEnabled={true}
+        thirdPartyCookiesEnabled={true}
+        domStorageEnabled={true}
         bounces={false}
         ref={webviewRef}
         pullToRefreshEnabled={true}
@@ -27,7 +104,8 @@ const Home = () => {
 
           // ---- DARK MODE ----
           function applyDarkMode() {
-            // Background Color
+          
+          // Background Color
             document.body.style.backgroundColor = "#121212";
 
 
@@ -45,7 +123,7 @@ const Home = () => {
                 children.forEach(child => {
                   if (child.classList.contains("fa-info-circle")) {
                     child.style.setProperty('color', '#fff', 'important');
-                    child.style.setProperty('padding-right', '10px', 'important');
+                    child.style.setProperty('padding-right', '15px', 'important');
                   }
                   if (!child.style.color) {
                     child.style.color = "#fff";
@@ -70,6 +148,12 @@ const Home = () => {
             document.querySelectorAll('.sm-navbar').forEach(el => {
               el.style.setProperty('--smo-navbar-color-bright', '#2f608b')
             });
+
+            // Tooltips
+            document.querySelectorAll('.tooltip').forEach(el => {
+              el.style.setProperty('--bs-tooltip-bg', '#fff')
+            });
+
         }
 
         window.addEventListener("load", () => {
@@ -91,7 +175,6 @@ const Home = () => {
         true;
           `}
         source={{ uri }}
-        sharedCookiesEnabled={true}
         cacheEnabled={true}
         />
         <View style={styles.headline}>
