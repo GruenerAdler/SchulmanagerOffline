@@ -1,78 +1,120 @@
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as IntentLauncher from 'expo-intent-launcher';
-import React, { useEffect, useRef } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 
-const CURRENT_VERSION = "0.1.1"; //TODO: updaten!! UND in app.json
+const CURRENT_VERSION = "0.1.2"; //TODO: updaten!! UND in app.json
 
 
-// Autoupdate
-const getLatestApk = async () => {
-  const response = await fetch('https://api.github.com/repos/GruenerAdler/SchulmanagerOffline/releases/latest');
-  const data = await response.json();
 
-  console.log("GitHub API Response:", data);
+const Home = () => { //TODO: rewrite update code, EVERYTHING!!
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [downloadedUri, setDownloadedUri] = useState(null);
+  const [downloading, setDownloading] = useState(false);
+  const [updateVersion, setUpdateVersion] = useState(null);
 
-  const apk = data.assets.find(a => a.name.endsWith('.apk'));
-  if (!apk) {
-    throw new Error("Keine APK gefunden!");
-  }
+  // ---------- UPDATE CHECK ----------
+  const getLatestApk = async () => {
+    const response = await fetch('https://api.github.com/repos/GruenerAdler/SchulmanagerOffline/releases/latest');
+    const data = await response.json();
 
-  return {
-    url: apk.browser_download_url,
-    version: data.tag_name
+    const apk = data.assets.find(a => a.name.endsWith('.apk'));
+    if (!apk) throw new Error("No APK found!");
+
+    return {
+      url: apk.browser_download_url,
+      version: data.tag_name
+    };
   };
-};
 
-const checkForUpdate = async () => {
-  try {
-    const latest = await getLatestApk();
-    const cleanLatest = latest.version.replace(/[^\d.]/g, "");
-    if (cleanLatest !== CURRENT_VERSION) {
-      //Prompt
-      Alert.alert(
-        "Update verfügbar",
-        `Neue Version ${latest.version} verfügbar. Willst du updaten?`,
-        [
-          {
-            text: "Nein",
-            style: "cancel"
-          },
-          {
-            text: "Ja",
-            onPress: () => DownloadAndInstall(latest.url)
-          }
-        ]
-      );
+  const checkForUpdate = async () => {
+    try {
+      // If something downloaded
+      const fileUri = FileSystem.cacheDirectory + "update.apk";
+      const fileInfo = await FileSystem.getInfoAsync(fileUri);
+      if (fileInfo.exists) {
+        setDownloadedUri(fileUri); // Install-Button aktivieren
+        setDownloadProgress(1);    // Fortschrittsbalken voll
+      }
+
+      // Getting latest apk
+      const latest = await getLatestApk();
+      const cleanLatest = latest.version.replace(/[^\d.]/g, "");
+
+      // Prompt
+      if (cleanLatest !== CURRENT_VERSION) {
+        setUpdateVersion(latest.version);
+      }
+    } catch (error) {
+      Alert.alert("Update-Check-Error:", error.message);
     }
-  } catch (error) {
-    console.log("Update-Check Fehler:", error);
   };
-};
-const DownloadAndInstall = async (apkUrl) => {
+
+  const Download = async (apkUrl) => {
+    try {
+      if (Platform.OS !== 'android') {
+        Alert.alert("Only Android supports APK installation");
+        return;
+      }
+      setDownloading(true);
+      // UpdateFile location
+      const fileUri  = FileSystem.cacheDirectory + "update.apk";
+
+      // Prepare Download
+      const download = FileSystem.createDownloadResumable(
+        apkUrl,
+        fileUri,
+        {},
+        (progressEvent) => {
+          const progress =
+            progressEvent.totalBytesWritten /
+            progressEvent.totalBytesExpectedToWrite;
+          setDownloadProgress(progress);
+        }
+      );
+      //Download
+      const result = await download.downloadAsync();
+      setDownloadedUri(result.uri);
+      setDownloading(false);
+
+    } catch (e) {
+      console.log(e);
+      Alert.alert("Download-Error:", e.message);
+      setDownloading(false);
+    }
+  };
+
+const Install = async () => {
+  if (!downloadedUri) return;
   try {
-    const fileUri = FileSystem.documentDirectory + 'app-release.apk';
+      const contentUri = await FileSystem.getContentUriAsync(downloadedUri);
+      await IntentLauncher.startActivityAsync(
+        'android.intent.action.INSTALL_PACKAGE',
+        {
+          data: contentUri,
+          flags: 1,
+          type: 'application/vnd.android.package-archive',
+        }
+      );
+    } catch (e) {
+      Alert.alert("Install-Error", e.message);
+    }
+  };
 
-    // Download
-    const download = await FileSystem.downloadAsync(apkUrl, fileUri);
-    console.log("APK gespeichert unter:", download.uri);
-
-    // Installationsdialog starten
-    await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
-      data: download.uri,
-      flags: 1,
-      type: 'application/vnd.android.package-archive'
-    });
-  } catch (error) {
-  console.log("Download/Install Fehler:", error);
-  }
-};
+  const DownloadPressed = async () => {
+    console.log(downloadProgress)
+    if (downloadProgress == 0) {
+      console.log("downloading")
+      const latest = await getLatestApk();
+      Download(latest.url);
+    } else if (downloadProgress == 1) {
+      Install();
+    }
+  };
 
 
-
-const Home = () => {
   useEffect(() => {
     checkForUpdate();
   }, []);
@@ -177,6 +219,41 @@ const Home = () => {
         source={{ uri }}
         cacheEnabled={true}
         />
+
+        {/* DOWNLOADING BAR */}
+        <TouchableOpacity
+          onPress={DownloadPressed} //TODO: Add lambda funktion wenn Download Version1 dann start download sonst Install
+          //disabled={downloadProgress !== 1}
+          style={{
+          height: 25,
+          backgroundColor: "#ddd",
+          borderRadius: 10,
+          overflow: "hidden",
+          justifyContent: "center",
+          alignItems: "center",
+          display: updateVersion ? "flex" : "none"
+        }}>
+            <View style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: `${downloadProgress * 100}%`,
+              backgroundColor: "#4caf50",
+            }}/>
+            <Text style={{
+              color: "black",
+              fontWeight: "bold",
+              fontSize: 18
+            }}>
+              {downloadProgress === 0
+                ? `Update to: ${updateVersion}`
+                : downloadProgress < 1 
+                  ? `Downloading... ${Math.round(downloadProgress * 100)}%` 
+                  : "Install"}
+            </Text>
+
+        </TouchableOpacity>
         <View style={styles.headline}>
             <Text style={styles.text}>Inofficial - Modified by GruenerAdler</Text>
         </View>
@@ -200,5 +277,10 @@ const styles = StyleSheet.create({
         fontSize:20,
         padding:5,
         color: "white"
+    },
+    downloadtext: {
+      fontSize: 25,
+      color: "white",
+      display: "flex"
     }
 })

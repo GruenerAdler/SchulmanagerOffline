@@ -5,3 +5,6 @@ Private Project by GruenerAdler
 
 ## Build command
 eas build --platform android --profile preview
+
+## Live App command
+npx expo run:android

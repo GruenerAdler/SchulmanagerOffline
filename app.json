@@ -2,7 +2,7 @@
   "expo": {
     "name": "SchulmanagerOffline",
     "slug": "SchulmanagerOffline",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "schulmanageroffline",
@@ -16,7 +16,12 @@
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "monochromeImage": "./assets/images/android-icon-monochrome.png",
+        "permissions": [
+          "READ_EXTERNAL_STORAGE",
+          "WRITE_EXTERNAL_STORAGE",
+          "REQUEST_INSTALL_PACKAGES"
+        ]
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
