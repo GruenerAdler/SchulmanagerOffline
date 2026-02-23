@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as IntentLauncher from 'expo-intent-launcher';
 import React, { useEffect, useRef, useState } from 'react';
@@ -5,7 +6,7 @@ import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 
-const CURRENT_VERSION = "0.1.2"; //TODO: updaten!! UND in app.json
+const CURRENT_VERSION = "0.1.3"; //TODO: updaten!! UND in app.json
 
 
 
@@ -14,6 +15,8 @@ const Home = () => { //TODO: rewrite update code, EVERYTHING!!
   const [downloadedUri, setDownloadedUri] = useState(null);
   const [downloading, setDownloading] = useState(false);
   const [updateVersion, setUpdateVersion] = useState(null);
+  const webviewRef = useRef(null);
+  const lastToken = null;
 
   // ---------- UPDATE CHECK ----------
   const getLatestApk = async () => {
@@ -115,12 +118,31 @@ const Install = async () => {
   };
 
 
+  const restoreAll = async () => {
+    try {
+      const data = await AsyncStorage.getItem("savedToken");
+      if (!data) return;
+      const js = `
+        const data = ${data};
+        localStorage.setItem(jwt, data);
+        true;
+      `;
+      webviewRef.current.injectJavaScript(js);
+    } catch (e) {
+      console.log(e)
+    }
+  };
+
+  const saveToken = async (token) => {
+    if (!token || lastToken == token) return;
+    await AsyncStorage.setItem("savedToken", token);
+  };
+
   useEffect(() => {
     checkForUpdate();
   }, []);
 
   // Prepare URL
-  const webviewRef = useRef(null);
   let tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow = tomorrow.toLocaleDateString("ko-KR");
@@ -137,6 +159,13 @@ const Install = async () => {
         ref={webviewRef}
         pullToRefreshEnabled={true}
         style={{ flex: 1}}
+        onMessage={(event) => {
+          const token = event.nativeEvent.data;
+          saveToken(token);
+        }}
+        onLoadEnd={() => {
+          restoreAll();
+        }}
         injectedJavaScript={`
           document.body.style.backgroundColor = "#121212";
           document.body.style.setProperty("--bs-body-bg","#121212");
@@ -205,6 +234,12 @@ const Install = async () => {
         // beobachten wenn neue Elemente dazukommen
         const observer = new MutationObserver(() => {
           applyDarkMode();
+          try {
+            const token = localStorage.getItem("jwt");
+            if (window.ReactNativeWebView) {
+              window.ReactNativeWebView.postMessage(token ?? "");
+            }
+          } catch {};
         });
 
         observer.observe(document.body, {
