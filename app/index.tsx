@@ -290,7 +290,7 @@ const Install = async () => {
 
         </TouchableOpacity>
         <View style={styles.headline}>
-            <Text style={styles.text}>Inofficial - Modified by GruenerAdler</Text>
+            <Text style={styles.text}>Inofficial - Modified</Text>
         </View>
     </SafeAreaView>
   )
