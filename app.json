@@ -49,13 +49,6 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "133546fa-04a7-4158-a6e0-f9856618ae21"
-      }
-    },
-    "owner": "grueneradler"
+    }
   }
 }
