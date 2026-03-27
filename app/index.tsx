@@ -9,10 +9,10 @@ import { checkForUpdate, DownloadPressHandler } from '../utils/DownloadHandler';
 import { injectJavaScript } from '../utils/injectJS';
 import { getJWT, Login } from '../utils/JWTHandler';
 
-const CURRENT_VERSION = "0.2.0"; //TODO: updaten!! UND in app.json
+const CURRENT_VERSION = "0.2.1"; //TODO: updaten!! UND in app.json
 
 
-const Home = () => {
+function Home() {
   const [downloadState, setDownloadState] = useState({
     progress: 0,
     uri: null,
@@ -33,13 +33,13 @@ const Home = () => {
     if (msg === "EXPIRED" || msg === "NO_JWT" || msg === "INVALID") {
       Login(webviewRef, event);
     }
-  }
+  };
 
   //Prepare URL
   let tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow = tomorrow.toLocaleDateString("ko-KR");
-  tomorrow = tomorrow.replace(/\. /g, '-')
+  tomorrow = tomorrow.replace(/\. /g, '-');
   const uri = `https://login.schulmanager-online.de/#/modules/schedules/view//?start=${tomorrow}`;
 
   // {---APP---}
@@ -52,14 +52,13 @@ const Home = () => {
         bounces={false}
         ref={webviewRef}
         pullToRefreshEnabled={true}
-        style={{flex:1}}
+        style={{ flex: 1 }}
         onMessage={onMessage}
-        onLoadEnd={() => {getJWT(webviewRef)}}
+        onLoadEnd={() => { getJWT(webviewRef); } }
         injectedJavaScript={injectJavaScript()}
         injectedJavaScriptBeforeContentLoaded={injectJavaScript()}
-        source={{uri}}
-        cacheEnabled={true}
-      />
+        source={{ uri }}
+        cacheEnabled={true} />
 
       {/* DOWNLOAD BAR*/}
       <TouchableOpacity
@@ -72,7 +71,7 @@ const Home = () => {
           justifyContent: "center",
           alignItems: "center",
           display: downloadState.version ? "flex" : "none"
-      }}>
+        }}>
         <View style={{
           position: "absolute",
           left: 0,
@@ -80,47 +79,46 @@ const Home = () => {
           bottom: 0,
           width: `${downloadState.progress * 100}%`,
           backgroundColor: "#4caf50",
-        }}/>
+        }} />
         <Text style={{
-              color: "black",
-              fontWeight: "bold",
-              fontSize: 18
+          color: "black",
+          fontWeight: "bold",
+          fontSize: 18
         }}>
           {downloadState.progress === 0
-          ? `Update to: ${downloadState.version}`
-          : downloadState.progress < 1 
-            ? `Downloading... ${Math.round(downloadState.progress * 100)}%` 
-            : "Install"}
+            ? `Update to: ${downloadState.version}`
+            : downloadState.progress < 1
+              ? `Downloading... ${Math.round(downloadState.progress * 100)}%`
+              : "Install"}
         </Text>
-        
+
       </TouchableOpacity>
-      
-      
+
+
       <View style={styles.headline}>
-          
-          {/* LEFT - Spacer*/}
-          <View style={styles.side} />
 
-          {/* CENTER - Titel */}
-          <View style={styles.center}>
-            <Text style={styles.text}>Inofficial - Modified</Text>
-          </View>
+        {/* LEFT - Spacer*/}
+        <View style={styles.side} />
 
-          {/* RIGHT - Settings */}
-          <View style={styles.side}>
-            <TouchableOpacity onPress={() => setSettingsVisible(true)}>
-              <Ionicons name="settings-outline" color="white" size={24} />
-            </TouchableOpacity>
-          </View>
-
+        {/* CENTER - Titel */}
+        <View style={styles.center}>
+          <Text style={styles.text}>Inofficial - Modified</Text>
         </View>
 
+        {/* RIGHT - Settings */}
+        <View style={styles.side}>
+          <TouchableOpacity onPress={() => setSettingsVisible(true)}>
+            <Ionicons name="settings-outline" color="white" size={24} />
+          </TouchableOpacity>
+        </View>
+
+      </View>
+
       <SettingsMenu
-        visible={settingsVisible} 
-        onClose={() => setSettingsVisible(false)} 
-      />
+        visible={settingsVisible}
+        onClose={() => setSettingsVisible(false)} />
     </SafeAreaView>
-  )
+  );
 }
 
 export default Home
