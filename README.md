@@ -1,10 +1,12 @@
 # SchulmanagerOffline
-This is a inofficial Mobile App to fix bugs and improve SchulmanagerOnline.
-Uses the Webview to replicate the website in the app.
-Private Project by GruenerAdler
+Diese Handy App, entwickelt für Android, ist eine inoffizielle App um fehler zu beheben und um den SchulmanagerOnline zu verbessern.
+Privates Projekt von GruenerAdler
 
-## Build command
+
+## --- DEV AREA ---
+
+### Build command
 eas build --platform android --profile preview
 
-## Live App command
+### Live App command
 npx expo run:android
