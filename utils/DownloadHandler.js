@@ -87,11 +87,11 @@ const Download = async (apkUrl, setDownloadState) => {
     }
 };
 
-const Install = async (downloadState) => {
+const Install = async (downloadState, setDownloadState) => {
     if (!downloadState.uri) return;
     try {
         const contentUri = await FileSystem.getContentUriAsync(downloadState.uri);
-        await IntentLauncher.startActivityAsync(
+        const installresult = await IntentLauncher.startActivityAsync(
         'android.intent.action.INSTALL_PACKAGE',
         {
           data: contentUri,
@@ -99,6 +99,14 @@ const Install = async (downloadState) => {
           type: 'application/vnd.android.package-archive',
         }
       );
+      if (installresult?.extra?.['android.intent.extra.INSTALL_RESULT'] == -2) {
+        setDownloadState(prev => ({
+            ...prev,
+            progress: 0,
+            uri: ""
+        }));
+        Alert.alert("Download Fehler", "Die Datei wurde nicht vollständig heruntergeladen. Bitte installieren sie Sie erneut.")
+        }
     } catch (e) {
         Alert.alert("Install-Error", e.message);
         console.log(e.message)
@@ -111,6 +119,6 @@ export const DownloadPressHandler = async (downloadState, setDownloadState) => {
         const latest = await getLatestAPK();
         Download(latest.url, setDownloadState);
     } else if (downloadState.progress == 1) {
-        Install(downloadState);
+        Install(downloadState, setDownloadState);
     }
 }

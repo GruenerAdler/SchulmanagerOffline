@@ -1,22 +1,41 @@
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from "expo-secure-store";
 import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-const SettingsMenu = ({ visible, onClose }) => {
+import Slider from "../components/Slider";
+
+const SettingsMenu = ({ visible, onClose, currentSettings, setSettings, theme }) => {
     const [email, setEmail] = useState("");
     const [pass, setPass] = useState("");
 
+    const handleClose = () => {
+        AsyncStorage.setItem("Settings", JSON.stringify(currentSettings));
+        onClose();
+    };
+
+
+    const onSettingChange = (key, value) => {
+        setSettings(prev => {
+            const updated = {
+                ...prev,
+                [key]: value,
+            };
+            return updated;
+        });
+    };
+
     const handleLoginSave = async () => {
-    try {
-        await SecureStore.setItemAsync("user_email", email);
-        await SecureStore.setItemAsync("user_pass", pass);
-        setEmail("");
-        setPass("");
-        Alert.alert("Login Daten gespeichert!", "Deine Login Daten wurde erfolgreich sicher gespeichert.");
-    } catch (e) {
-        console.log("Save error:", e);
-    }
+        try {
+            await SecureStore.setItemAsync("user_email", email);
+            await SecureStore.setItemAsync("user_pass", pass);
+            setEmail("");
+            setPass("");
+            Alert.alert("Login Daten gespeichert!", "Deine Login Daten wurde erfolgreich sicher gespeichert.");
+        } catch (e) {
+            console.log("Save error:", e);
+        }
     };
 
     if (!visible) return;
@@ -32,7 +51,7 @@ const SettingsMenu = ({ visible, onClose }) => {
       alignItems: "center"
     }}>
 
-      {/* BACKDROP (nur dieser reagiert auf Klicks) */}
+      {/* BACKGROUND */}
       <Pressable
         style={{
           position: "absolute",
@@ -41,47 +60,83 @@ const SettingsMenu = ({ visible, onClose }) => {
           right: 0,
           bottom: 0,
         }}
-        onPress={onClose}
+        onPress={handleClose}
       />
 
       {/* CONTENT */}
       <View style={{
         width: "90%",
         height: "60%",
-        backgroundColor: "#222",
+        backgroundColor: theme === "dark" ? "#222" : "#fff",
         padding: 20,
         borderRadius: 10,
         zIndex: 2
       }}>
         
-        <View style={styles.HeaderContainer}>
+        <View style={styles.TitleContainer}>
   
-            <Text style={styles.Header}>
+            <Text style={[styles.Title, theme === "light" && styles.darkFont]}>
                 Einstellungen
             </Text>
 
-            <TouchableOpacity onPress={onClose}>
+            <TouchableOpacity onPress={handleClose}>
                 <Ionicons name="close-outline" size={30} color="red" />
             </TouchableOpacity>
 
         </View>
 
-        <Text style={styles.SubHeader}>
+        {/*Basics*/}
+        <Text style={[styles.Header, theme === "light" && styles.darkFont]}>
+          Allgemein
+        </Text>
+
+        <Text style={[styles.SubHeader, theme === "light" && styles.darkFont]}>
+          Thema
+        </Text>
+
+        <Slider
+            value={currentSettings.theme}
+            onChange={(value) => onSettingChange("theme", value)}
+            theme={theme}
+            options={[
+                {
+                value: "light",
+                icon: (active) => (
+                    <Ionicons name="sunny" size={18} color={active ? "#fafe00" : theme === "dark" ? "#9CA3AF" : "#fff"} />
+                ),
+                },
+                {
+                value: "dark",
+                icon: (active) => (
+                    <Ionicons name="moon" size={18} color={active ? "#b0a3e1" : theme === "dark" ? "#9CA3AF" : "#fff"} />
+                ),
+                },
+                {
+                value: "system",
+                icon: (active) => (
+                    <Ionicons name="settings" size={18} color={active ? "#ffffff" : theme === "dark" ? "#9CA3AF" : "#fff"} />
+                ),
+                },
+            ]}
+        />
+
+        {/*Login*/}
+        <Text style={[styles.Header, theme === "light" && styles.darkFont]}>
           Login
         </Text>
 
-        <Text style={styles.LoginEmail}>E-Mail oder Benutzername</Text>
+        <Text style={[styles.SubHeader, theme === "light" && styles.darkFont]}>E-Mail oder Benutzername</Text>
         <TextInput
-            style={styles.LoginEmailInput}
+            style={[styles.LoginInput, theme === "light" && styles.darkFont]}
             value={email}
             onChangeText={setEmail}
         />
 
-        <Text style={styles.LoginPass} >Passwort:</Text>
+        <Text style={[styles.SubHeader, theme === "light" && styles.darkFont]} >Passwort:</Text>
         <TextInput
-            style={styles.LoginPassInput}
+            style={[styles.LoginInput, theme === "light" && styles.darkFont]}
             value={pass}
-            secureT
+            secureTextEntry
             onChangeText={setPass}
         />
 
@@ -104,40 +159,34 @@ const SettingsMenu = ({ visible, onClose }) => {
 export default SettingsMenu;
 
 const styles = StyleSheet.create({
-    HeaderContainer: {
+    darkFont: {
+        color: "black",
+        borderColor: "black",
+    },
+    TitleContainer: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
         width: "100%",
     },
-    Header: {
+    Title: {
         color: "white",
         fontSize: 25,
         fontWeight: "bold"
     },
-    SubHeader: {
+
+    Header: {
         color: "white",
         fontSize: 20,
         marginTop: 10,
     },
-    LoginEmail: {
+    SubHeader: {
         color: "white",
-        fonzSize: 15,
+        fontSize: 15,
         marginTop: 5,
     },
-    LoginEmailInput: {
-        borderWidth: 1,
-        borderColor: "white",
-        borderRadius: 15,
-        color: "white",
-        marginTop: 5,
-    },
-    LoginPass: {
-        color: "white",
-        fonzSize: 15,
-        marginTop: 5,
-    },
-    LoginPassInput: {
+
+    LoginInput: {
         borderWidth: 1,
         borderColor: "white",
         borderRadius: 15,
