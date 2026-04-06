@@ -13,7 +13,7 @@ import { checkForUpdate, DownloadPressHandler } from '../utils/DownloadHandler';
 import { injectJavaScript } from '../utils/injectJS';
 import { getJWT, Login } from '../utils/JWTHandler';
 
-const CURRENT_VERSION = "0.2.0"; //TODO: updaten!! UND in app.json
+const CURRENT_VERSION = "0.3.0"; //TODO: updaten!! UND in app.json
 
 
 function Home() {
