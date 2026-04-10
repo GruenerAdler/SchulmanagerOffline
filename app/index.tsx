@@ -59,6 +59,7 @@ function Home() {
         type: "theme",
         value: theme
       }));
+      console.log("POSTED THEME")
   }, [theme]);
 
   const loadSettings = async () => {
@@ -102,7 +103,10 @@ function Home() {
           pullToRefreshEnabled={true}
           style={{ flex: 1 }}
           onMessage={onMessage}
-          onLoadEnd={() => { getJWT(webviewRef); } }
+          onLoadEnd={() => { getJWT(webviewRef); webviewRef.current.postMessage(JSON.stringify({
+        type: "theme",
+        value: theme
+      }));} }
           injectedJavaScript={injectJavaScript()}
           injectedJavaScriptBeforeContentLoaded={injectJavaScript()}
           source={{ uri }}
