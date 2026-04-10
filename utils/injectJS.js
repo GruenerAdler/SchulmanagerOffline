@@ -109,7 +109,7 @@ observer.observe(document.body, {
 });
 
 } catch (e) {
-  window.ReactNativeWebView.postMessage(JSON.stringify(error));
+  window.ReactNativeWebView.postMessage(JSON.stringify(e));
 }
 true;
 `;};
