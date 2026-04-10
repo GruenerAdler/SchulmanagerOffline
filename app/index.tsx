@@ -103,10 +103,7 @@ function Home() {
           pullToRefreshEnabled={true}
           style={{ flex: 1 }}
           onMessage={onMessage}
-          onLoadEnd={() => { getJWT(webviewRef); webviewRef.current.postMessage(JSON.stringify({
-        type: "theme",
-        value: theme
-      }));} }
+          onLoadEnd={() => { getJWT(webviewRef); webviewRef.current.postMessage(JSON.stringify({type: "theme",value: theme}));} }
           injectedJavaScript={injectJavaScript()}
           injectedJavaScriptBeforeContentLoaded={injectJavaScript()}
           source={{ uri }}

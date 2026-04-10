@@ -2,13 +2,15 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from "expo-secure-store";
 import { useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import Slider from "../components/Slider";
 
 const SettingsMenu = ({ visible, onClose, currentSettings, setSettings, theme }) => {
     const [email, setEmail] = useState("");
     const [pass, setPass] = useState("");
+    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+    const [loginSaved, setLoginSaved] = useState(false);
 
     const handleClose = () => {
         AsyncStorage.setItem("Settings", JSON.stringify(currentSettings));
@@ -32,7 +34,10 @@ const SettingsMenu = ({ visible, onClose, currentSettings, setSettings, theme })
             await SecureStore.setItemAsync("user_pass", pass);
             setEmail("");
             setPass("");
-            Alert.alert("Login Daten gespeichert!", "Deine Login Daten wurde erfolgreich sicher gespeichert.");
+
+            setLoginSaved(true);
+            await delay(2000);
+            setLoginSaved(false);
         } catch (e) {
             console.log("Save error:", e);
         }
@@ -130,6 +135,8 @@ const SettingsMenu = ({ visible, onClose, currentSettings, setSettings, theme })
             style={[styles.LoginInput, theme === "light" && styles.darkFont]}
             value={email}
             onChangeText={setEmail}
+            autoCapitalize='none'
+            autoComplete='email'
         />
 
         <Text style={[styles.SubHeader, theme === "light" && styles.darkFont]} >Passwort:</Text>
@@ -138,14 +145,17 @@ const SettingsMenu = ({ visible, onClose, currentSettings, setSettings, theme })
             value={pass}
             secureTextEntry
             onChangeText={setPass}
+            autoCapitalize='none'
+            autoComplete='password'
         />
 
         <TouchableOpacity
-            style={styles.LoginButton}
+            style={[styles.LoginButton, loginSaved && {backgroundColor : 'green'}]}
             onPress={handleLoginSave}
+            activeOpacity={0.5}
         >
             <Text style={styles.LoginButtonText}>
-                Login Daten speichern
+                {loginSaved ? "Login Daten gespeichert!" : "Login Daten speichern"}
             </Text>
         </TouchableOpacity>
 
