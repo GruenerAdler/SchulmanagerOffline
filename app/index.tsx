@@ -28,6 +28,7 @@ function Home() {
   const [theme, setTheme] = useState(null);
   const systemTheme = useColorScheme();
 
+  const [webviewReady, setWebviewReady] = useState(false);
   const webviewRef = useRef(null);
 
   
@@ -50,7 +51,7 @@ function Home() {
 }, [currentSettings, systemTheme]);
 
   useEffect(() => {
-      if (!theme || !webviewRef) return;
+      if (!theme || !webviewRef.current || !webviewReady) return;
 
       NavigationBar.setButtonStyleAsync(
           theme === "dark" ? "light" : "dark"
@@ -60,7 +61,7 @@ function Home() {
         value: theme
       }));
       console.log("POSTED THEME")
-  }, [theme]);
+  }, [theme, webviewReady]);
 
   const loadSettings = async () => {
     try {
@@ -103,7 +104,7 @@ function Home() {
           pullToRefreshEnabled={true}
           style={{ flex: 1 }}
           onMessage={onMessage}
-          onLoadEnd={() => { getJWT(webviewRef); webviewRef.current.postMessage(JSON.stringify({type: "theme",value: theme}));} }
+          onLoadEnd={() => { getJWT(webviewRef); setWebviewReady(true);} }
           injectedJavaScript={injectJavaScript()}
           injectedJavaScriptBeforeContentLoaded={injectJavaScript()}
           source={{ uri }}
