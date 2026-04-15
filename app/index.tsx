@@ -35,20 +35,20 @@ function Home() {
 
   useEffect(() => {
     checkForUpdate(setDownloadState, CURRENT_VERSION);
-    loadSettings()
+    loadSettings();
   }, []);
+
 
   useEffect(() => {
     if (!currentSettings) return;
-
     const newTheme =
         currentSettings.theme === "system"
             ? systemTheme
             : currentSettings.theme;
 
     setTheme(newTheme);
-
 }, [currentSettings, systemTheme]);
+
 
   useEffect(() => {
       if (!theme || !webviewRef.current || !webviewReady) return;
@@ -60,8 +60,18 @@ function Home() {
         type: "theme",
         value: theme
       }));
-      console.log("POSTED THEME")
   }, [theme, webviewReady]);
+
+  useEffect(() => {
+    if (!currentSettings || !currentSettings.customColor || !webviewRef.current || !webviewReady) return;
+
+    webviewRef.current.postMessage(JSON.stringify({
+      type: "customColor",
+      value: currentSettings.customColor
+    }));
+
+  }, [currentSettings, webviewReady]);
+
 
   const loadSettings = async () => {
     try {
@@ -79,7 +89,7 @@ function Home() {
     if (msg === "EXPIRED" || msg === "NO_JWT" || msg === "INVALID") {
       Login(webviewRef, event);
     } else if (msg != "VALID") {
-      console.log("MESSAGE" + msg)
+      console.log("MESSAGE " + msg)
     }
   };
 
@@ -106,7 +116,6 @@ function Home() {
           onMessage={onMessage}
           onLoadEnd={() => { getJWT(webviewRef); setWebviewReady(true);} }
           injectedJavaScript={injectJavaScript()}
-          injectedJavaScriptBeforeContentLoaded={injectJavaScript()}
           source={{ uri }}
           cacheEnabled={true} />
 

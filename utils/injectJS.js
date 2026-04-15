@@ -37,10 +37,6 @@ function applyDarkMode() {
     el.classList.add('btn-dark');  
   });
 
-  //Headline
-  document.querySelectorAll('.sm-navbar').forEach(el => {
-    el.style.setProperty('--smo-navbar-color-bright', '#2f608b')  
-  });
 
   //Tooltips
   document.querySelectorAll('.tooltip').forEach(el => {
@@ -62,9 +58,49 @@ function fixStuff() {
   });
 }
 
+function CustomColor() {
+  const color = localStorage.getItem("customColor") || "#2f608b";
+
+  // Titles
+  document.querySelectorAll('.sm-navbar').forEach(el => {
+    el.style.setProperty('--smo-navbar-color-bright', color);
+    let {r,g,b} = hexToRgbDarkened(color, 0.25);
+    el.style.setProperty('--smo-navbar-color-dark', 'rgb(' + r + ', ' + g + ', ' + b + ')', 'important');
+  });
+
+  // Login Title
+  document.querySelectorAll('.tile-header' ).forEach(el => {
+    el.style.setProperty('background-color', color);
+  });
+
+  document.querySelectorAll('.btn-primary').forEach(el => {
+    el.style.setProperty('--bs-btn-bg', color);
+    el.style.setProperty('--bs-btn-disabled-bg', color);
+    el.style.setProperty('--bs-btn-border-color', color);
+    el.style.setProperty('--bs-btn-disabled-border-color', color);
+  });
+
+  //Mails
+  document.querySelectorAll('.modal-header').forEach(el => {
+    el.style.setProperty('background-color', color);
+  });
+
+  //Reports
+  document.querySelectorAll('.nav, .nav-item').forEach(el => {
+    el.style.setProperty('border-color', color);
+  });
+
+  //Dropdown - Dropdown
+  document.querySelectorAll('.dropdown-item, .active').forEach(el => {
+    el.style.setProperty('background-color', color, "important");
+  });
+
+}
+
 //OnLoad
 window.addEventListener("load", () => {
   fixStuff();
+  CustomColor();
   if (theme == "dark") {
     applyDarkMode(); 
   }
@@ -73,6 +109,7 @@ window.addEventListener("load", () => {
 //OnChange
 const observer = new MutationObserver(() => {
   fixStuff();
+  CustomColor();
   if (theme == "dark") {
     applyDarkMode();
   }
@@ -80,15 +117,20 @@ const observer = new MutationObserver(() => {
 
 
 function handleMessage(event) {
-  try {
+try {
     const data = JSON.parse(event.data);
-    if (data.type === "theme") {
+    if (data.type == "theme") {
       theme = data.value === "dark" ? "dark" : "light";
       if (theme === "dark") {
         applyDarkMode();
       } else {
         window.location.reload();
       }
+    }
+    if (data.type == "customColor") {
+    if (!data.value.startsWith("#")) return;
+     localStorage.setItem("customColor", data.value);
+     CustomColor();
     }
   } catch (e) {
     window.ReactNativeWebView.postMessage("ERROR: " + e.message);
@@ -97,9 +139,20 @@ function handleMessage(event) {
 
 //LISTENER
 document.addEventListener("message", handleMessage); // Android
-//window.addEventListener("message", handleMessage);   // iOS
+window.addEventListener("message", handleMessage);   // iOS
 
+const hexToRgbDarkened = (hex, amount = 0.1) => {
+  let r = parseInt(hex.slice(1, 3), 16);
+  let g = parseInt(hex.slice(3, 5), 16);
+  let b = parseInt(hex.slice(5, 7), 16);
 
+  // dunkler machen (einfach multiplizieren)
+  r = Math.max(0, Math.floor(r * (1 - amount)));
+  g = Math.max(0, Math.floor(g * (1 - amount)));
+  b = Math.max(0, Math.floor(b * (1 - amount)));
+
+  return { r, g, b };
+};
 
 observer.observe(document.body, {
   childList: true,
@@ -109,7 +162,7 @@ observer.observe(document.body, {
 });
 
 } catch (e) {
-  window.ReactNativeWebView.postMessage(JSON.stringify(e));
+  window.ReactNativeWebView.postMessage(JSON.stringify(e.message));
 }
 true;
 `;};
