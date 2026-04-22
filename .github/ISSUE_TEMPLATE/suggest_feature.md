@@ -2,7 +2,7 @@
 name: Feature Request
 about: Neue Funktion vorschlagen
 title: "[FEATURE] "
-labels: feature
+labels: "new feature"
 ---
 
 ## Idee
