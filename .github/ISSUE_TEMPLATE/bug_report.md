@@ -6,18 +6,23 @@ labels: bug
 ---
 
 ## Beschreibung
-Was ist passiert?
+<!--Beschreibe was passiert was, was nicht so sein sollte-->
 
 ## Schritte zum Reproduzieren
-1. ...
-2. ...
+<!--Was muss man machen, damit dieser Fehler auftritt-->
+1. 
+2. 
 
 ## Erwartetes Verhalten
-Was sollte passieren?
+<!--Was sollte passieren?-->
 
 ## Screenshots
-(optional)
+<!--Optional-->
+
+## Sonstiges
+<!--Optional-->
 
 ## Umgebung
 - Gerät:
 - App-Version:
+<!--In den Einstellungen vom Handy nachschauen-->
