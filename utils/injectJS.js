@@ -31,13 +31,6 @@ function applyDarkMode() {
     });
   });
   
-  //Buttons
-  document.querySelectorAll('.btn-light').forEach(el => {
-    el.classList.remove('btn-light');
-    el.classList.add('btn-dark');  
-  });
-
-
   //Tooltips
   document.querySelectorAll('.tooltip').forEach(el => {
     el.style.setProperty('--bs-tooltip-bg', '#fff')
@@ -66,7 +59,7 @@ function CustomColor() {
     el.style.setProperty('--smo-navbar-color-bright', color);
     let {r,g,b} = hexToRgbDarkened(color, 0.25);
     el.style.setProperty('--smo-navbar-color-dark', 'rgb(' + r + ', ' + g + ', ' + b + ')', 'important');
-  });
+  })
 
   // Login Title
   document.querySelectorAll('.tile-header' ).forEach(el => {
@@ -74,26 +67,67 @@ function CustomColor() {
   });
 
   document.querySelectorAll('.btn-primary').forEach(el => {
+    let {r,g,b} = hexToRgbDarkened(color, -0.25);
     el.style.setProperty('--bs-btn-bg', color);
     el.style.setProperty('--bs-btn-disabled-bg', color);
     el.style.setProperty('--bs-btn-border-color', color);
     el.style.setProperty('--bs-btn-disabled-border-color', color);
+    el.style.setProperty('--bs-btn-active-bg', 'rgb(' + r + ', ' + g + ', ' + b + ')');
+    el.style.setProperty('--bs-btn-hover-bg', color);
   });
+
 
   //Mails
   document.querySelectorAll('.modal-header').forEach(el => {
     el.style.setProperty('background-color', color);
+  });
+  document.querySelectorAll('.table').forEach(el => {
+    el.style.setProperty('--bs-table-hover-color', "gray");
+    el.style.setProperty('--bs-table-hover-bg', "rgba(0,0,0,0)");
+  });
+  document.querySelectorAll('.modal-content .dropdown-menu, .ng-dropdown-panel').forEach(el => {
+    el.style.setProperty('--bs-dropdown-link-active-bg', color);
   });
 
   //Reports
   document.querySelectorAll('.nav, .nav-item').forEach(el => {
     el.style.setProperty('border-color', color);
   });
+  const style1 = document.createElement('style');
+  style1.textContent = \`
+  .nice-tabs > li.nav-item.active:not(.disabled),
+  .nice-tabs > li.nav-item:hover:not(.disabled),
+  .nice-tabs > li.nav-item:focus:not(.disabled) {
+    background: \${color} !important;
+  }
+  .nice-tabs>li>a {
+      margin-right: 0;
+      padding: 7px 12px 5px;
+      color: \${color} !important;
+  }  
+  \`;
+  document.head.appendChild(style1);
+
 
   //Dropdown - Dropdown
-  document.querySelectorAll('.dropdown-item, .active').forEach(el => {
-    el.style.setProperty('background-color', color, "important");
+  document.querySelectorAll('.navbar-dropdown .dropdown-menu').forEach(el => {
+    el.style.setProperty('--bs-dropdown-bg', color);
+    el.style.setProperty('--bs-dropdown-link-hover-bg', "rgba(0,0,0,0)");
+    el.style.setProperty('--bs-dropdown-link-active-bg', "rgba(0,0,0,0)");
+    el.querySelectorAll('.dropdown-item').forEach(child => {
+      let {r,g,b} = hexToRgbDarkened(color, 0.25);
+      child.style.setProperty('background-color', 'rgb(' + r + ', ' + g + ', ' + b + ')', 'important');
+    });
   });
+
+  //Calendar week dropdown
+  const style2 = document.createElement('style');
+  style2.textContent = \`
+    .class-hour-calendar .week-navigation .calendar-week-column .calendar-week-column-flex .calendar-week .calendar-week-selection .ng-dropdown-panel .ng-option.ng-option-selected {
+      background: \${color} !important;
+    }
+  \`;
+  document.head.appendChild(style2);
 
 }
 

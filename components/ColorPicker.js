@@ -52,6 +52,7 @@ const [inputValue, setInputValue] = useState(initialColor);
 
           <View style={styles.pickerWrapper}>
             <ColorPicker
+              palette={["#428bca","#2f608b", "#ff0000", "#ff7f00", "#ffff00", "#00ff00", "#00ffff", "#0000ff", "#ff00ff",]}
                 color={color}
                 onColorChange={(c) => {
                     setInputValue(c);

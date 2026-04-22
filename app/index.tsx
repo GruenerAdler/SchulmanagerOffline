@@ -13,7 +13,7 @@ import { checkForUpdate, DownloadPressHandler } from '../utils/DownloadHandler';
 import { injectJavaScript } from '../utils/injectJS';
 import { getJWT, Login } from '../utils/JWTHandler';
 
-const CURRENT_VERSION = "0.3.0"; //TODO: updaten!! UND in app.json
+const CURRENT_VERSION = "0.2.1"; //TODO: updaten!! UND in app.json
 
 
 function Home() {
@@ -97,9 +97,8 @@ function Home() {
   //Prepare URL
   let tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const formatted = tomorrow.getFullYear(); + "-" + String(tomorrow.getMonth() + 1).padStart(2, '0') + "-" + String(tomorrow.getDate()).padStart(2, '0');
-
-  const uri = `https://login.schulmanager-online.de/#/modules/schedules/view//?start=${formatted}`;
+  tomorrow.toISOString().split('T')[0];
+  const uri = `https://login.schulmanager-online.de/#/modules/schedules/view//?start=${tomorrow}`;
 
   // {---APP---}
   return (
@@ -155,7 +154,7 @@ function Home() {
         </TouchableOpacity>
 
 
-        <View style={[styles.headline, theme === "light" && styles.lightBG]}>
+        <View style={[styles.headline, theme === "light" ? [styles.lightBG, {borderTopColor: "#eeeeee"}] : {borderTopColor: "#303030"}]}>
 
           {/* LEFT - Spacer*/}
           <View style={styles.side} />
@@ -201,7 +200,8 @@ const styles = StyleSheet.create({
       backgroundColor: "#121212",
       alignItems: "center",
       justifyContent: "center",
-      flexDirection: "row"
+      flexDirection: "row",
+      borderTopWidth: 2,
     },
     text: {
         fontSize:20,
