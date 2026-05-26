@@ -94,9 +94,13 @@ function Home() {
       } else if (msg == "VALID") {
         return true;
       }
-      const data = JSON.parse(event.nativeEvent.data);
-      if (data.type === "DOWNLOAD") {
-        await downloadAndOpenFile(data.url);
+      try {
+        const data = JSON.parse(event.nativeEvent.data);
+        if (data.type === "DOWNLOAD") {
+          await downloadAndOpenFile(data.url);
+        }
+      } catch (e) {
+        console.log("MSG:" + msg)
       }
     } catch (e) {
       console.log("MSG ERROR:" + e);

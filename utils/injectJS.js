@@ -25,9 +25,6 @@ function applyDarkMode() {
       if (child.classList.contains("fa-info-circle")) {
         child.style.setProperty('color', '#fff', 'important');
       }
-      if (!child.style.color && !el.classList.contains("cancelled")) {
-        child.style.color = "#fff";
-      }
     });
   });
   
@@ -57,7 +54,7 @@ function CustomColor() {
   // Titles
   document.querySelectorAll('.sm-navbar').forEach(el => {
     el.style.setProperty('--smo-navbar-color-bright', color);
-    let {r,g,b} = hexToRgbDarkened(color, 0.25);
+    let {r,g,b} = darkenColor(color, 0.25);
     el.style.setProperty('--smo-navbar-color-dark', 'rgb(' + r + ', ' + g + ', ' + b + ')', 'important');
   })
 
@@ -66,9 +63,10 @@ function CustomColor() {
     el.style.setProperty('background-color', color);
   });
 
-  document.querySelectorAll('.btn-primary').forEach(el => {
-    let {r,g,b} = hexToRgbDarkened(color, -0.25);
+  document.querySelectorAll('.btn-primary, .btn-light').forEach(el => {
+    let {r,g,b} = darkenColor(color, -0.25);
     el.style.setProperty('--bs-btn-bg', color);
+    el.style.setProperty('--bs-btn-color', '#fff', 'important');
     el.style.setProperty('--bs-btn-disabled-bg', color);
     el.style.setProperty('--bs-btn-border-color', color);
     el.style.setProperty('--bs-btn-disabled-border-color', color);
@@ -108,6 +106,19 @@ function CustomColor() {
   \`;
   document.head.appendChild(style1);
 
+  document.querySelectorAll('.calendar-table').forEach(el => {
+    el.querySelectorAll(".text-center").forEach(child => {
+      if (child.dataset.darkened === "true") return;
+      const bgcolor = getComputedStyle(child).backgroundColor;
+      if (bgcolor != "rgba(0, 0, 0, 0)" && bgcolor != "transparent") {
+        let {r,g,b} = darkenColor(bgcolor, 0.15);
+        child.style.setProperty('background-color', 'rgb(' + r + ', ' + g + ', ' + b + ')', 'important');
+        child.dataset.darkened = "true";
+      }
+      
+    });
+  });
+
 
   //Dropdown - Dropdown
   document.querySelectorAll('.navbar-dropdown .dropdown-menu').forEach(el => {
@@ -115,7 +126,7 @@ function CustomColor() {
     el.style.setProperty('--bs-dropdown-link-hover-bg', "rgba(0,0,0,0)");
     el.style.setProperty('--bs-dropdown-link-active-bg', "rgba(0,0,0,0)");
     el.querySelectorAll('.dropdown-item').forEach(child => {
-      let {r,g,b} = hexToRgbDarkened(color, 0.25);
+      let {r,g,b} = darkenColor(color, 0.25);
       child.style.setProperty('background-color', 'rgb(' + r + ', ' + g + ', ' + b + ')', 'important');
     });
   });
@@ -171,7 +182,7 @@ try {
   }
 }
 
-//GETDEBUG
+//If starting download on website
 const originalFetch = window.fetch;
 
 window.fetch = async (...args) => {
@@ -192,23 +203,47 @@ window.fetch = async (...args) => {
   return originalFetch(...args);
 };
 
-//DEBUG
+
 //LISTENER
 document.addEventListener("message", handleMessage); // Android
 window.addEventListener("message", handleMessage);   // iOS
 
-const hexToRgbDarkened = (hex, amount = 0.1) => {
-  let r = parseInt(hex.slice(1, 3), 16);
-  let g = parseInt(hex.slice(3, 5), 16);
-  let b = parseInt(hex.slice(5, 7), 16);
+function parseColor(color) {
+  // RGB / RGBA
+  if (!color.startsWith("#")) {
+    const [r, g, b] = color
+    .replace("rgb(", "")
+    .replace(")", "")
+    .split(",")
+    .map(n => parseInt(n.trim()));
 
-  // dunkler machen (einfach multiplizieren)
-  r = Math.max(0, Math.floor(r * (1 - amount)));
-  g = Math.max(0, Math.floor(g * (1 - amount)));
-  b = Math.max(0, Math.floor(b * (1 - amount)));
+    return {r, g, b}
+  } else {
+    color = color.replace("#", "");
+    if (color.length === 3) {
+      color = color.split("").map(c => c + c).join("");
+    }
+    const num = parseInt(color, 16);
+
+    let r = (num >> 16) & 255
+    let g = (num >> 8) & 255
+    let b = num & 255
+
+    return {r,g,b};
+  }
+  return null;
+}
+
+function darkenColor(color, factor = 0.25) {
+  const rgb = parseColor(color);
+  if (!rgb) return;
+  const r = Math.floor(rgb.r * (1 - factor));
+  const g = Math.floor(rgb.g * (1 - factor));
+  const b = Math.floor(rgb.b * (1 - factor));
 
   return { r, g, b };
-};
+}
+
 
 observer.observe(document.body, {
   childList: true,
