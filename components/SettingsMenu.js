@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from "expo-secure-store";
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import Color_Picker from "../components/ColorPicker";
 import Slider from "../components/Slider";
@@ -86,12 +86,13 @@ const SettingsMenu = ({ visible, onClose, currentSettings, setSettings, theme })
       {/* CONTENT */}
       <View style={{
         width: "90%",
-        height: "60%",
+        height: "70%",
         backgroundColor: theme === "dark" ? "#222" : "#fff",
         padding: 20,
         borderRadius: 10,
         zIndex: 2
       }}>
+        <ScrollView>
         
         <View style={styles.TitleContainer}>
   
@@ -109,7 +110,7 @@ const SettingsMenu = ({ visible, onClose, currentSettings, setSettings, theme })
         <Text style={[styles.Header, theme === "light" && styles.darkFont]}>
           Allgemein
         </Text>
-
+            
         <Text style={[styles.SubHeader, theme === "light" && styles.darkFont]}>
           Thema
         </Text>
@@ -140,12 +141,12 @@ const SettingsMenu = ({ visible, onClose, currentSettings, setSettings, theme })
                 },
             ]}
         />
-
+            <View style={styles.divider} />
         {/*Login*/}
         <Text style={[styles.Header, theme === "light" && styles.darkFont]}>
           Login
         </Text>
-
+            
         <Text style={[styles.SubHeader, theme === "light" && styles.darkFont]}>E-Mail oder Benutzername</Text>
         <TextInput
             style={[styles.LoginInput, theme === "light" && styles.darkFont]}
@@ -174,7 +175,7 @@ const SettingsMenu = ({ visible, onClose, currentSettings, setSettings, theme })
                 {loginSaved ? "Login Daten gespeichert!" : "Login Daten speichern"}
             </Text>
         </TouchableOpacity>
-
+            <View style={styles.divider} />
         {/*Extras*/}
         <Text style={[styles.Header, theme === "light" && styles.darkFont]}>
           Extras
@@ -216,8 +217,9 @@ const SettingsMenu = ({ visible, onClose, currentSettings, setSettings, theme })
         theme={currentSettings.theme}
         
         />
+        </ScrollView>
       </View>
-
+                
     </View>
   );
 };
@@ -225,6 +227,13 @@ const SettingsMenu = ({ visible, onClose, currentSettings, setSettings, theme })
 export default SettingsMenu;
 
 const styles = StyleSheet.create({
+    divider: {
+        height: 2,
+        backgroundColor: "#404040",
+        marginTop: 30,
+        marginBottom: 0,
+        width: "100%",
+    },
     darkFont: {
         color: "black",
         borderColor: "black",
