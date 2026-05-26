@@ -1,6 +1,6 @@
 import * as FileSystem from 'expo-file-system/legacy';
+import * as IntentLauncher from 'expo-intent-launcher';
 import { Alert, Platform } from 'react-native';
-import FileViewer from "react-native-file-viewer";
 
 let openingFile = false;
 
@@ -130,24 +130,50 @@ export const DownloadPressHandler = async (downloadState, setDownloadState) => {
 const extractFileInfo = (url) => {
   try {
     const encoded = url.split("/download-file/")[1];
+
     const decoded = atob(encoded);
+
     const parsed = JSON.parse(decoded);
+
+    const mimeType = parsed[4];
     const fileName = parsed[6];
-    return fileName;
+
+    return {
+      fileName,
+      mimeType
+    };
+
   } catch (e) {
     console.log("DECODE ERROR:", e);
+
     return {
-      fileName: "file"
+      fileName: "file",
+      mimeType: "*/*"
     };
   }
 };
 
-const openFile = async (fileUri) => {
+const openFile = async (fileUri, mimeType) => {
   try {
-    await FileViewer.open(fileUri);
+
+    const contentUri =
+      await FileSystem.getContentUriAsync(fileUri);
+
+    console.log(contentUri);
+
+    await IntentLauncher.startActivityAsync(
+      "android.intent.action.VIEW",
+      {
+        data: contentUri,
+        type: mimeType,
+        flags: 1,
+      }
+    );
 
   } catch (e) {
+
     console.log("OPEN ERROR:", e);
+
   }
 };
 
@@ -155,13 +181,16 @@ export const downloadAndOpenFile = async (url) => {
   try {
     if (openingFile == false) {
         openingFile = true;
-        const fileName = extractFileInfo(url);
-        const fileUri = FileSystem.cacheDirectory + fileName;
+        const {fileName, mimeType} = extractFileInfo(url);
+        const safeFileName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+
+        const fileUri = FileSystem.cacheDirectory + safeFileName;
 
         const fileInfo = await FileSystem.getInfoAsync(fileUri);
 
         if (fileInfo.exists) {
-        await openFile(fileUri);
+        await openFile(fileUri, mimeType);
+        openingFile = false;
         return;
         }
 
@@ -171,7 +200,7 @@ export const downloadAndOpenFile = async (url) => {
         throw new Error("Download fehlgeschlagen");
         }
 
-        openFile(fileUri);
+        openFile(fileUri, mimeType);
         openingFile = false;
     }
   } catch (e) {
