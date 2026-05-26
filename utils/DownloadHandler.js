@@ -156,10 +156,8 @@ const extractFileInfo = (url) => {
 const openFile = async (fileUri, mimeType) => {
   try {
 
-    const contentUri =
-      await FileSystem.getContentUriAsync(fileUri);
+    const contentUri = await FileSystem.getContentUriAsync(fileUri);
 
-    console.log(contentUri);
 
     await IntentLauncher.startActivityAsync(
       "android.intent.action.VIEW",
