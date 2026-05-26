@@ -3,13 +3,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as NavigationBar from 'expo-navigation-bar';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { Linking, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SettingsMenu from '../components/SettingsMenu';
 import { defaultSettings } from "../utils/defaultSettings";
-import { checkForUpdate, DownloadPressHandler } from '../utils/DownloadHandler';
+import { checkForUpdate, downloadAndOpenFile, DownloadPressHandler } from '../utils/DownloadHandler';
 import { injectJavaScript } from '../utils/injectJS';
 import { getJWT, Login } from '../utils/JWTHandler';
 
@@ -84,14 +84,26 @@ function Home() {
     }
   };
 
+
   const onMessage = async (event: any) => {
-    const msg = event.nativeEvent.data;
-    if (msg === "EXPIRED" || msg === "NO_JWT" || msg === "INVALID") {
-      Login(webviewRef, event);
-    } else if (msg != "VALID") {
-      console.log("MESSAGE " + msg)
+    try {
+      const msg = event.nativeEvent.data;
+      if (msg === "EXPIRED" || msg === "NO_JWT" || msg === "INVALID") {
+        Login(webviewRef, event);
+        return true;
+      } else if (msg == "VALID") {
+        return true;
+      }
+      const data = JSON.parse(event.nativeEvent.data);
+      if (data.type === "DOWNLOAD") {
+        await downloadAndOpenFile(data.url);
+      }
+    } catch (e) {
+      console.log("MSG ERROR:" + e);
     }
   };
+
+
 
 
   //Prepare URL
@@ -99,7 +111,7 @@ function Home() {
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.toISOString().split('T')[0];
   const uri = `https://login.schulmanager-online.de/#/modules/schedules/view//?start=${tomorrow}`;
-
+  const allowedHost = "login.schulmanager-online.de";
   // {---APP---}
   return (
     <SafeAreaView style={[styles.container, theme === "light" && styles.lightBG]}>
@@ -116,7 +128,16 @@ function Home() {
           onLoadEnd={() => { getJWT(webviewRef); setWebviewReady(true);} }
           injectedJavaScript={injectJavaScript()}
           source={{ uri }}
-          cacheEnabled={true} />
+          cacheEnabled={true}
+          onShouldStartLoadWithRequest={(request) => {
+            const url = request.url;
+            if (url.includes(allowedHost)) {
+              return true;
+            }
+            Linking.openURL(url);
+            return false;
+          }}
+          />
 
         {/* DOWNLOAD BAR*/}
         <TouchableOpacity

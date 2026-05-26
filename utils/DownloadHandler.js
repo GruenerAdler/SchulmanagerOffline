@@ -1,6 +1,8 @@
 import * as FileSystem from 'expo-file-system/legacy';
-import * as IntentLauncher from 'expo-intent-launcher';
 import { Alert, Platform } from 'react-native';
+import FileViewer from "react-native-file-viewer";
+
+let openingFile = false;
 
 const getLatestAPK = async () => {
     const response = await fetch('https://api.github.com/repos/GruenerAdler/SchulmanagerOffline/releases/latest');
@@ -91,7 +93,7 @@ const Install = async (downloadState, setDownloadState) => {
     if (!downloadState.uri) return;
     try {
         const contentUri = await FileSystem.getContentUriAsync(downloadState.uri);
-        const installresult = await IntentLauncher.startActivityAsync(
+        const installresult = await IntentLauncher.startActivity(
         'android.intent.action.INSTALL_PACKAGE',
         {
           data: contentUri,
@@ -122,3 +124,57 @@ export const DownloadPressHandler = async (downloadState, setDownloadState) => {
         Install(downloadState, setDownloadState);
     }
 }
+
+
+//NORMAL FILES
+const extractFileInfo = (url) => {
+  try {
+    const encoded = url.split("/download-file/")[1];
+    const decoded = atob(encoded);
+    const parsed = JSON.parse(decoded);
+    const fileName = parsed[6];
+    return fileName;
+  } catch (e) {
+    console.log("DECODE ERROR:", e);
+    return {
+      fileName: "file"
+    };
+  }
+};
+
+const openFile = async (fileUri) => {
+  try {
+    await FileViewer.open(fileUri);
+
+  } catch (e) {
+    console.log("OPEN ERROR:", e);
+  }
+};
+
+export const downloadAndOpenFile = async (url) => {
+  try {
+    if (openingFile == false) {
+        openingFile = true;
+        const fileName = extractFileInfo(url);
+        const fileUri = FileSystem.cacheDirectory + fileName;
+
+        const fileInfo = await FileSystem.getInfoAsync(fileUri);
+
+        if (fileInfo.exists) {
+        await openFile(fileUri);
+        return;
+        }
+
+        const result = await FileSystem.downloadAsync(url, fileUri);
+
+        if (result.status !== 200) {
+        throw new Error("Download fehlgeschlagen");
+        }
+
+        openFile(fileUri);
+        openingFile = false;
+    }
+  } catch (e) {
+    console.log("DOWNLOAD ERROR:", e);
+  }
+};

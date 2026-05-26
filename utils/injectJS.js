@@ -171,6 +171,28 @@ try {
   }
 }
 
+//GETDEBUG
+const originalFetch = window.fetch;
+
+window.fetch = async (...args) => {
+
+  const url =
+    typeof args[0] === "string"
+      ? args[0]
+      : args[0]?.url;
+
+  if (url && url.includes("/download-file/")) {
+
+    window.ReactNativeWebView.postMessage(JSON.stringify({
+      type: "DOWNLOAD",
+      url
+    }));
+  }
+
+  return originalFetch(...args);
+};
+
+//DEBUG
 //LISTENER
 document.addEventListener("message", handleMessage); // Android
 window.addEventListener("message", handleMessage);   // iOS
