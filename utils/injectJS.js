@@ -4,6 +4,7 @@ try {
 let theme
 document.body.style.setProperty("--safe-area-inset-top","0");
 
+//[GREENMARK]
 // --Dark Mode
 function applyDarkMode() {
   document.body.style.backgroundColor = "#121212";
@@ -33,8 +34,10 @@ function applyDarkMode() {
     el.style.setProperty('--bs-tooltip-bg', '#fff')
   });
 }
-
+//[GREENMARK]
+//[REDMARK]
 function fixStuff() {
+  const color = localStorage.getItem("customColor") || "#2f608b"; 
   //Drop Down
   document.querySelectorAll('.ng-dropdown-panel').forEach(el => {
     el.style.setProperty('left', '-85px');
@@ -46,8 +49,11 @@ function fixStuff() {
       child.style.setProperty('padding-right', '15px', 'important');
     });
   });
-}
 
+}
+//[REDMARK]
+
+//[BLUEMARK]
 function CustomColor() {
   const color = localStorage.getItem("customColor") || "#2f608b";
 
@@ -57,6 +63,7 @@ function CustomColor() {
     let {r,g,b} = darkenColor(color, 0.25);
     el.style.setProperty('--smo-navbar-color-dark', 'rgb(' + r + ', ' + g + ', ' + b + ')', 'important');
   })
+
 
   // Login Title
   document.querySelectorAll('.tile-header' ).forEach(el => {
@@ -87,6 +94,7 @@ function CustomColor() {
     el.style.setProperty('--bs-dropdown-link-active-bg', color);
   });
 
+
   //Reports
   document.querySelectorAll('.nav, .nav-item').forEach(el => {
     el.style.setProperty('border-color', color);
@@ -106,6 +114,7 @@ function CustomColor() {
   \`;
   document.head.appendChild(style1);
 
+  //colored cells
   document.querySelectorAll('.calendar-table').forEach(el => {
     el.querySelectorAll(".text-center").forEach(child => {
       if (child.dataset.darkened === "true") return;
@@ -115,10 +124,30 @@ function CustomColor() {
         child.style.setProperty('background-color', 'rgb(' + r + ', ' + g + ', ' + b + ')', 'important');
         child.dataset.darkened = "true";
       }
-      
     });
   });
 
+  //Current Day - Lessons
+  document.querySelectorAll('.calendar-table span').forEach(el => {
+    const text = el.innerText.trim();
+    const match = text.match(/[0-9]{2}[^0-9][0-9]{2}/);
+    if (!match) return;
+
+    const [day, month] = match[0].split(/[^0-9]/).map(Number);
+    const now = new Date();
+
+    if (
+      day === now.getDate() &&
+      month === now.getMonth() + 1
+    ) {
+      if (el.dataset.currentDay === "true") return;
+
+      el.style.setProperty("color", color, "important");
+      el.style.setProperty("font-weight", "bold", "important");
+      document.body.dataset.currentDay = "true";
+    }
+
+  });
 
   //Dropdown - Dropdown
   document.querySelectorAll('.navbar-dropdown .dropdown-menu').forEach(el => {
@@ -141,6 +170,7 @@ function CustomColor() {
   document.head.appendChild(style2);
 
 }
+//[BLUEMARK]
 
 //OnLoad
 window.addEventListener("load", () => {
@@ -174,6 +204,7 @@ try {
     }
     if (data.type == "customColor") {
     if (!data.value.startsWith("#")) return;
+     document.body.dataset.currentDay = "false";
      localStorage.setItem("customColor", data.value);
      CustomColor();
     }

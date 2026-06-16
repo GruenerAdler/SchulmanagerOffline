@@ -111,10 +111,11 @@ function Home() {
 
 
   //Prepare URL
-  let tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.toISOString().split('T')[0];
-  const uri = `https://login.schulmanager-online.de/#/modules/schedules/view//?start=${tomorrow}`;
+let tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
+const date = tomorrow.toISOString().split('T')[0];
+const uri = `https://login.schulmanager-online.de/#/modules/schedules/view//?start=${date}`;
+console.log(uri);
   const allowedHost = "login.schulmanager-online.de";
   // {---APP---}
   return (
